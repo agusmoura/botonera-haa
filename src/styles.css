@@ -55,11 +55,14 @@ body {
 
 .top__brand {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-direction: row;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 2px 10px;
 }
 
 .title {
+  position: relative;
   margin: 0;
   font-family: Anton, sans-serif;
   font-weight: 400;
@@ -68,8 +71,36 @@ body {
   line-height: 1;
 }
 
+/* spider web spun in the top-left corner of the wordmark */
+.title::before {
+  content: "";
+  position: absolute;
+  top: -0.08em;
+  left: -0.16em;
+  width: 0.82em;
+  height: 0.82em;
+  background: url(/web-corner.svg) no-repeat top left;
+  background-size: contain;
+  pointer-events: none;
+}
+
 .title__dot {
+  position: relative;
   color: var(--accent);
+}
+
+/* spider rappelling down from the dot */
+.title__dot::after {
+  content: "";
+  position: absolute;
+  top: 0.46em;
+  left: 50%;
+  width: 0.4em;
+  height: 0.62em;
+  transform: translateX(-50%);
+  background: url(/spider.svg) no-repeat top center;
+  background-size: contain;
+  pointer-events: none;
 }
 
 .sub {

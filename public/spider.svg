@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 72">
+  <!-- dragline from the dot -->
+  <line x1="22" y1="0" x2="22" y2="29" stroke="#f4d03f" stroke-width="2" stroke-opacity="0.85" />
+  <!-- bent legs (out to a knee, then down) -->
+  <g stroke="#f4d03f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M16 42 L5 37 L2 41" />
+    <path d="M15 46 L3 45 L1 50" />
+    <path d="M15 50 L4 54 L2 59" />
+    <path d="M17 53 L7 59 L6 66" />
+    <path d="M28 42 L39 37 L42 41" />
+    <path d="M29 46 L41 45 L43 50" />
+    <path d="M29 50 L40 54 L42 59" />
+    <path d="M27 53 L37 59 L38 66" />
+  </g>
+  <!-- body -->
+  <ellipse cx="22" cy="47" rx="6.5" ry="8.5" fill="#f4d03f" />
+  <ellipse cx="22" cy="37.5" rx="4" ry="3.5" fill="#f4d03f" />
+</svg>
