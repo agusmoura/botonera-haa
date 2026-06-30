@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
+    <title>La Botonera de la Araña</title>
+    <meta
+      name="description"
+      content="Botonera de sonidos de Hay Algo Ahí y el streaming argentino. Disparo instantáneo, reversa, favoritos y modo offline. La botonera de la araña, recargada."
+    />
+    <meta name="theme-color" content="#0e0e10" />
+    <meta name="robots" content="index, follow" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="La Botonera de la Araña" />
+    <meta property="og:locale" content="es_AR" />
+    <meta property="og:title" content="La Botonera de la Araña" />
+    <meta
+      property="og:description"
+      content="Botonera de Hay Algo Ahí. Instantánea, con reversa y offline. Combatí la licuadora — HAGOV."
+    />
+    <meta property="og:image" content="/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="La Botonera de la Araña" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="La Botonera de la Araña" />
+    <meta
+      name="twitter:description"
+      content="Botonera de Hay Algo Ahí. Instantánea, con reversa y offline."
+    />
+    <meta name="twitter:image" content="/og.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@1,400;1,500;1,600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="app" data-density="comfortable">
+      <header class="top">
+        <div class="top__row">
+          <div class="top__brand">
+          <h1 class="title">LA BOTONERA<span class="title__dot">.</span></h1>
+          <p class="sub">
+            <span class="sub__tag">de la araña</span>
+            <span class="sub__count">· <span id="count"></span></span>
+          </p>
+        </div>
+        <div class="top__tools">
+          <input
+            id="search"
+            class="search"
+            type="search"
+            placeholder="Buscar…  (espacio)"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+          />
+          <button id="edit" class="iconbtn" type="button" title="Editar favoritos">Editar</button>
+          <button id="settings-btn" class="iconbtn" type="button" aria-label="Ajustes" title="Ajustes">⚙</button>
+          <button id="info-btn" class="iconbtn" type="button" aria-label="Info" title="Info / créditos">ⓘ</button>
+          <button id="stop" class="stop" type="button">SILENCIO</button>
+          </div>
+        </div>
+        <p class="hints">
+          <strong>★</strong> favoritos · <kbd>1–9</kbd> disparar · <kbd>⇧</kbd> al revés ·
+          <kbd>espacio</kbd> buscar · <kbd>Enter</kbd> el 1° · <kbd>Esc</kbd> reset
+        </p>
+      </header>
+
+      <section id="favorites" class="favs" hidden>
+        <h2 class="favs__title">★ Favoritos</h2>
+        <div id="favs-grid" class="grid favs__grid"></div>
+      </section>
+
+      <main id="grid" class="grid" aria-label="Sonidos"></main>
+
+      <footer class="foot">
+        <p class="foot__brand">
+          LA BOTONERA™ HAY ALGO AHÍ™ · creada por
+          <a href="https://x.com/hagovRanger" target="_blank" rel="noopener">@hagovRanger</a> ·
+          <button id="info-link" class="linkbtn" type="button">qué es esto</button>
+        </p>
+      </footer>
+
+      <button id="stop-fab" class="stop-fab" type="button" aria-label="Silencio">■</button>
+    </div>
+
+    <dialog id="settings" class="dialog">
+      <form method="dialog" class="dialog__form">
+        <div class="dialog__head">
+          <h2 class="dialog__title">Ajustes</h2>
+          <button class="iconbtn" value="close" aria-label="Cerrar">✕</button>
+        </div>
+
+        <label class="set">
+          <span>Volumen</span>
+          <input id="set-volume" type="range" min="0" max="100" />
+        </label>
+
+        <label class="set">
+          <span>Modo de disparo</span>
+          <select id="set-mode">
+            <option value="poly">Mezclar varios</option>
+            <option value="mono">Una a la vez</option>
+          </select>
+        </label>
+
+        <label class="set">
+          <span>Densidad de grilla</span>
+          <select id="set-density">
+            <option value="comfortable">Cómoda</option>
+            <option value="compact">Compacta</option>
+          </select>
+        </label>
+
+        <label class="set set--check">
+          <input id="set-motion" type="checkbox" />
+          <span>Reducir animaciones</span>
+        </label>
+      </form>
+    </dialog>
+
+    <dialog id="info" class="dialog dialog--info">
+      <form method="dialog" class="dialog__form">
+        <div class="dialog__head">
+          <div class="dialog__brand">
+            <h2 class="dialog__title">LA BOTONERA<span class="title__dot">.</span></h2>
+            <p class="dialog__tag">de la araña</p>
+          </div>
+          <button class="iconbtn" value="close" aria-label="Cerrar">✕</button>
+        </div>
+
+        <p class="info__lead">
+          Recreación de
+          <a href="https://labotoneradelarania.netlify.app/" target="_blank" rel="noopener"
+            >LA BOTONERA DE LA ARAÑA</a
+          >
+          (original de <a href="https://x.com/WavJoa" target="_blank" rel="noopener">@WavJoa</a>) por
+          <a href="https://x.com/hagovRanger" target="_blank" rel="noopener">@hagovRanger</a>.
+          Sonidos de <strong>Hay Algo Ahí</strong>.
+        </p>
+
+        <div class="info__cta">
+          <p class="info__war">EN GUERRA CONTRA LA LICUADORA</p>
+          <p class="info__sub">Echaron a todo el equipo. Bancalos.</p>
+          <a class="info__hagov" href="https://hagov.ar/" target="_blank" rel="noopener">
+            PONÉ PLATA ACÁ PARA COMBATIR
+          </a>
+        </div>
+
+        <p class="info__legal">
+          © 2026 CaleGroup S.A. — Todos los derechos reservados.<br />
+          LA BOTONERA™ · y cualquier cosa que se nos ocurra registrar mañana.<br />
+          <span class="info__petty">(Aprendimos de los que registran marcas ajenas. Saludos.)</span>
+        </p>
+      </form>
+    </dialog>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
