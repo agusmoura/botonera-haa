@@ -45,14 +45,17 @@ function getCtx(): AudioContext {
     gain.gain.value = volume;
     compressor.connect(gain);
     gain.connect(ctx.destination);
+    // Recover from mobile lock / tab-background: iOS/Android suspend (or "interrupt") the
+    // context and kill in-flight sources. On return, resume it and clear the dead voices so
+    // their stuck progress fills get cleared.
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && ctx && ctx.state !== "running") {
+        void ctx.resume().catch(() => {});
+        stopAll();
+      }
+    });
   }
   return ctx;
-}
-
-// Must run inside a user gesture on iOS for audio to actually output.
-function resumeCtx(): void {
-  const c = getCtx();
-  if (c.state === "suspended") void c.resume();
 }
 
 async function decode(file: string): Promise<AudioBuffer> {
@@ -118,8 +121,9 @@ function getReversed(file: string, buf: AudioBuffer): AudioBuffer {
 }
 
 export async function play(file: string, opts?: { reverse?: boolean }): Promise<void> {
-  resumeCtx();
   const c = getCtx();
+  // resume() must finish before start() or the sound is lost on a suspended/interrupted ctx
+  if (c.state !== "running") await c.resume().catch(() => {});
   const forward = await decode(file);
   const buf = opts?.reverse ? getReversed(file, forward) : forward;
   if (triggerMode === "mono") stopAll();
@@ -151,7 +155,8 @@ export function stopAll(): void {
   voices.clear();
 }
 
-// Warm the AudioContext on the first user gesture (iOS unlock).
+// Warm/resume the AudioContext on the first user gesture (iOS unlock).
 export function unlock(): void {
-  resumeCtx();
+  const c = getCtx();
+  if (c.state !== "running") void c.resume();
 }
