@@ -1,13 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <rect width="512" height="512" rx="116" fill="#0e0e10" />
-  <circle cx="256" cy="256" r="142" fill="#f4d03f" />
-  <!-- blend / vortex nod carved into the disc (the "mix" metaphor, unnamed) -->
-  <path
-    d="M256 256 m-96 0 a96 96 0 1 1 96 96"
-    fill="none"
-    stroke="#0e0e10"
-    stroke-width="34"
-    stroke-linecap="round"
-  />
-  <circle cx="256" cy="256" r="32" fill="#0e0e10" />
+  <!-- spider web: 8 radial spokes + 2 web rings + hub -->
+  <g fill="none" stroke="#f4d03f" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M256 256 L408 256 M256 256 L363 363 M256 256 L256 408 M256 256 L149 363 M256 256 L104 256 M256 256 L149 149 M256 256 L256 104 M256 256 L363 149" />
+    <polygon points="351,256 323,323 256,351 189,323 161,256 189,189 256,161 323,189" />
+    <polygon points="408,256 363,363 256,408 149,363 104,256 149,149 256,104 363,149" />
+  </g>
+  <circle cx="256" cy="256" r="14" fill="#f4d03f" />
 </svg>

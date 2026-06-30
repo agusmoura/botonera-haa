@@ -48,7 +48,19 @@ async function boot() {
 
   // first visit → seed favorites with the manifest's ★ set (keys 1-9 = first 9 of them)
   if (state.isPristine()) {
-    state.reorderFavorites(sounds.filter((s) => s.fav).map((s) => s.file));
+    const defaultFavs = [
+      "sape.m4a",
+      "buenas.m4a",
+      "disparo.m4a",
+      "drums_1.m4a",
+      "juli_estoy_trabado_en_el_trafico.m4a",
+      "spiderman.m4a",
+      "se_llama_manu_jove.m4a",
+      "japanese_style_sound_effect.m4a",
+      "cucarajas.m4a",
+      "corneta.m4a",
+    ].filter((f) => byFile.has(f));
+    state.reorderFavorites(defaultFavs);
   }
 
   setPlaybackListener({ onStart: fillStart, onEnd: fillClear });
@@ -419,6 +431,20 @@ window.addEventListener("pointerdown", unlock, { once: true });
     offers: { "@type": "Offer", price: "0", priceCurrency: "ARS" },
   });
   document.head.appendChild(ld);
+}
+
+// analytics (Umami) — load only on the deployed site, never on localhost/preview/tests
+{
+  const h = location.hostname;
+  const isLocal =
+    !h || h === "localhost" || h === "127.0.0.1" || h === "0.0.0.0" || h.endsWith(".local");
+  if (!isLocal) {
+    const a = document.createElement("script");
+    a.defer = true;
+    a.src = "https://analytics.moura.ar/stats.js";
+    a.dataset.websiteId = "a9f744b1-6c76-40ac-bb40-b72141d9c7b6";
+    document.head.appendChild(a);
+  }
 }
 
 boot();

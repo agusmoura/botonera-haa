@@ -1,4 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="7" fill="#0e0e10" />
-  <circle cx="16" cy="16" r="7" fill="#f4d03f" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#0e0e10" />
+  <!-- bold web for tiny sizes: 8 spokes + 1 ring + hub -->
+  <g fill="none" stroke="#f4d03f" stroke-width="17" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M256 256 L406 256 M256 256 L362 362 M256 256 L256 406 M256 256 L150 362 M256 256 L106 256 M256 256 L150 150 M256 256 L256 106 M256 256 L362 150" />
+    <polygon points="406,256 362,362 256,406 150,362 106,256 150,150 256,106 362,150" />
+  </g>
+  <circle cx="256" cy="256" r="22" fill="#f4d03f" />
 </svg>
