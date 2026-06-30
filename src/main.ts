@@ -32,6 +32,7 @@ const volEl = document.querySelector<HTMLInputElement>("#set-volume")!;
 const modeEl = document.querySelector<HTMLSelectElement>("#set-mode")!;
 const densityEl = document.querySelector<HTMLSelectElement>("#set-density")!;
 const motionEl = document.querySelector<HTMLInputElement>("#set-motion")!;
+const revEl = document.querySelector<HTMLInputElement>("#set-rev")!;
 
 let sounds: Sound[] = [];
 const byFile = new Map<string, Sound>();
@@ -228,6 +229,7 @@ function onPadPointerDown(e: PointerEvent) {
   const rect = pad.getBoundingClientRect();
   const revZone =
     window.matchMedia("(max-width: 679px)").matches &&
+    state.getSettings().touchReverse &&
     e.clientX - rect.left > rect.width * 0.667;
   trigger(pad, e.shiftKey || revZone);
 }
@@ -268,10 +270,12 @@ function applySettings() {
   setTriggerMode(s.triggerMode);
   app.dataset.density = s.density;
   app.classList.toggle("reduce-motion", s.reduceMotion);
+  app.classList.toggle("no-touch-rev", !s.touchReverse);
   volEl.value = String(Math.round(s.volume * 100));
   modeEl.value = s.triggerMode;
   densityEl.value = s.density;
   motionEl.checked = s.reduceMotion;
+  revEl.checked = s.touchReverse;
 }
 
 settingsBtn.addEventListener("pointerdown", (e) => {
@@ -299,6 +303,10 @@ densityEl.addEventListener("change", () => {
 });
 motionEl.addEventListener("change", () => {
   state.setSetting("reduceMotion", motionEl.checked);
+  applySettings();
+});
+revEl.addEventListener("change", () => {
+  state.setSetting("touchReverse", revEl.checked);
   applySettings();
 });
 

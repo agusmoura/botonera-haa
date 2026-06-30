@@ -351,6 +351,11 @@ kbd {
 }
 
 /* ---------- settings dialog ---------- */
+/* lock background scroll while a modal is open (scroll lives on <html>, not <body>) */
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+
 .dialog {
   width: min(420px, 92vw);
   padding: 0;
@@ -370,6 +375,8 @@ kbd {
   flex-direction: column;
   gap: 16px;
   padding: 18px;
+  max-height: 90dvh;
+  overflow-y: auto;
 }
 
 .dialog__head {
@@ -550,6 +557,12 @@ kbd {
   .hints {
     display: none; /* keyboard shortcuts — desktop only (mobile has no keyboard) */
   }
+  #stop {
+    display: none; /* the floating stop (FAB) replaces it on mobile */
+  }
+  .foot {
+    padding-bottom: 88px; /* clear the floating stop + room to scroll past */
+  }
 }
 
 /* ---------- info dialog ---------- */
@@ -688,6 +701,10 @@ kbd {
   .pad__rev {
     display: none; /* REV zone is a touch feature — desktop reverses with Shift */
   }
+}
+
+#app.no-touch-rev .pad__rev {
+  display: none; /* reverse-on-touch turned off in settings */
 }
 
 /* ---------- floating stop (mobile thumb zone) ---------- */

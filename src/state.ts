@@ -8,6 +8,7 @@ export type Settings = {
   triggerMode: TriggerMode;
   density: Density;
   reduceMotion: boolean;
+  touchReverse: boolean; // right-third = reverse on mobile
 };
 
 export type State = {
@@ -24,6 +25,7 @@ const DEFAULTS: State = {
     triggerMode: "poly",
     density: "comfortable",
     reduceMotion: false,
+    touchReverse: true,
   },
 };
 
