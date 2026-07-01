@@ -456,6 +456,7 @@ window.addEventListener("pointerdown", unlock, { once: true });
     a.defer = true;
     a.src = "https://analytics.moura.ar/stats.js";
     a.dataset.websiteId = "a9f744b1-6c76-40ac-bb40-b72141d9c7b6";
+    a.dataset.performance = "true"; // Core Web Vitals (LCP/INP/CLS/FCP/TTFB) — Umami >= v3.1.0
     document.head.appendChild(a);
   }
 }
