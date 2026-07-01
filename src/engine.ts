@@ -15,7 +15,8 @@ let compressor: DynamicsCompressorNode | null = null;
 let gain: GainNode | null = null;
 
 const buffers = new Map<string, AudioBuffer>(); // decoded, cached (raw bytes live in the SW/HTTP cache)
-const voices = new Map<string, AudioBufferSourceNode>(); // live voice by sound
+const voices = new Map<string, { src: AudioBufferSourceNode; gain: GainNode }>(); // live voice by sound
+const pendingCancel = new Set<string>(); // files scroll-cancelled mid-decode (before the voice exists)
 const reversed = new Map<string, AudioBuffer>(); // cached reversed copies (Shift+key)
 
 const BASE = "sounds/";
@@ -100,7 +101,27 @@ function stopVoice(file: string): void {
   const v = voices.get(file);
   if (!v) return;
   try {
-    v.stop();
+    v.src.stop();
+  } catch {
+    /* already ended */
+  }
+  voices.delete(file);
+  listener.onEnd?.(file);
+}
+
+// Cancel a just-started voice with a tiny fade-out (no click) — used when a tap turns into a scroll.
+export function cancelVoice(file: string): void {
+  const v = voices.get(file);
+  if (!v) {
+    pendingCancel.add(file); // voice not started yet (mid-decode) → cancel it once it does
+    return;
+  }
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  try {
+    v.gain.gain.setValueAtTime(v.gain.gain.value, now);
+    v.gain.gain.linearRampToValueAtTime(0, now + 0.03);
+    v.src.stop(now + 0.035);
   } catch {
     /* already ended */
   }
@@ -126,6 +147,7 @@ function getReversed(file: string, buf: AudioBuffer): AudioBuffer {
 
 export async function play(file: string, opts?: { reverse?: boolean }): Promise<void> {
   const c = getCtx();
+  pendingCancel.delete(file); // clear any stale cancel from a prior aborted play
   // resume() must finish before start() or the sound is lost on a suspended/interrupted ctx
   if (c.state !== "running") await c.resume().catch(() => {});
   const forward = await decode(file);
@@ -134,23 +156,26 @@ export async function play(file: string, opts?: { reverse?: boolean }): Promise<
   else stopVoice(file);
   const src = c.createBufferSource();
   src.buffer = buf;
-  src.connect(compressor!);
+  const g = c.createGain(); // per-voice gain so a scroll-cancel can fade out (no click)
+  src.connect(g);
+  g.connect(compressor!);
   src.onended = () => {
-    if (voices.get(file) === src) {
+    if (voices.get(file)?.src === src) {
       voices.delete(file);
       listener.onEnd?.(file);
     }
   };
-  voices.set(file, src);
+  voices.set(file, { src, gain: g });
   src.start(0);
   listener.onStart?.(file, buf.duration, !!opts?.reverse);
+  if (pendingCancel.delete(file)) cancelVoice(file); // a scroll cancelled during decode → cancel now
 }
 
 // Stop every sounding voice (SILENCIO).
 export function stopAll(): void {
   voices.forEach((v, file) => {
     try {
-      v.stop();
+      v.src.stop();
     } catch {
       /* already ended */
     }

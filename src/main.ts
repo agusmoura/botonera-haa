@@ -2,6 +2,7 @@ import "./styles.css";
 import {
   play,
   stopAll,
+  cancelVoice,
   unlock,
   warmup,
   prefetch,
@@ -33,6 +34,14 @@ const dialog = document.querySelector<HTMLDialogElement>("#settings")!;
 const infoDialog = document.querySelector<HTMLDialogElement>("#info")!;
 const infoBtn = document.querySelector<HTMLButtonElement>("#info-btn")!;
 const infoLink = document.querySelector<HTMLButtonElement>("#info-link")!;
+const shareDialog = document.querySelector<HTMLDialogElement>("#share")!;
+const shareTitle = document.querySelector<HTMLElement>("#share-title")!;
+const shareBtn = document.querySelector<HTMLButtonElement>("#share-btn")!;
+const dlLink = document.querySelector<HTMLAnchorElement>("#dl")!;
+const dlBtn = document.querySelector<HTMLButtonElement>("#downloads-btn")!;
+const dlDialog = document.querySelector<HTMLDialogElement>("#downloads")!;
+const dlSearch = document.querySelector<HTMLInputElement>("#dl-search")!;
+const dlList = document.querySelector<HTMLElement>("#dl-list")!;
 const count = document.querySelector<HTMLElement>("#count")!;
 const volEl = document.querySelector<HTMLInputElement>("#set-volume")!;
 const modeEl = document.querySelector<HTMLSelectElement>("#set-mode")!;
@@ -190,7 +199,12 @@ function playFile(file: string, reverse = false) {
 }
 
 function padsFor(file: string): HTMLElement[] {
-  return [...document.querySelectorAll<HTMLElement>(`.pad[data-file="${file}"]`)];
+  // the download-modal rows carry a .pad__fill too → the progress fill plays on them as well
+  return [
+    ...document.querySelectorAll<HTMLElement>(
+      `.pad[data-file="${file}"], .dl-row__play[data-file="${file}"]`
+    ),
+  ];
 }
 
 function fillStart(file: string, dur: number, reverse: boolean) {
@@ -257,10 +271,156 @@ function onPadPointerDown(e: PointerEvent) {
     state.getSettings().touchReverse &&
     e.clientX - rect.left > rect.width * 0.667;
   trigger(pad, e.shiftKey || revZone);
+  if (e.pointerType !== "mouse") armScrollGuard(pad.dataset.file!, e); // cancel if it turns into a scroll
 }
 
 grid.addEventListener("pointerdown", onPadPointerDown);
 favsGrid.addEventListener("pointerdown", onPadPointerDown);
+
+// cancel a just-triggered sound if the touch turns into a scroll (moved >10px, or the browser
+// takes the gesture) — keeps instant play on real taps, kills accidental scroll-triggers.
+let sgFile: string | null = null;
+let sgX = 0;
+let sgY = 0;
+
+function endScrollGuard() {
+  sgFile = null;
+  document.removeEventListener("pointermove", onScrollGuardMove);
+  document.removeEventListener("pointerup", endScrollGuard);
+  document.removeEventListener("pointercancel", onScrollGuardCancel);
+}
+
+function onScrollGuardMove(e: PointerEvent) {
+  if (sgFile && Math.hypot(e.clientX - sgX, e.clientY - sgY) > 10) {
+    cancelVoice(sgFile);
+    endScrollGuard();
+  }
+}
+
+function onScrollGuardCancel() {
+  if (sgFile) cancelVoice(sgFile);
+  endScrollGuard();
+}
+
+function armScrollGuard(file: string, e: PointerEvent) {
+  endScrollGuard();
+  sgFile = file;
+  sgX = e.clientX;
+  sgY = e.clientY;
+  document.addEventListener("pointermove", onScrollGuardMove);
+  document.addEventListener("pointerup", endScrollGuard);
+  document.addEventListener("pointercancel", onScrollGuardCancel);
+}
+
+// ---------- download / share a sound ----------
+// header button → #downloads modal (search + list) → pick a sound → #share sheet (this).
+let shareFile: File | null = null;
+let shareLabel = "";
+
+function openShareSheet(file: string) {
+  const s = byFile.get(file);
+  if (!s) return;
+  shareLabel = s.label;
+  shareTitle.textContent = s.label;
+  dlLink.href = "sounds/" + file;
+  dlLink.download = s.label + ".m4a";
+  shareFile = null;
+  shareBtn.hidden = true;
+  // prepare the File up front so share() in the button click keeps its user activation (iOS Safari)
+  fetch("sounds/" + file)
+    .then((r) => r.blob())
+    .then((b) => {
+      const f = new File([b], s.label + ".m4a", { type: "audio/mp4" });
+      if (navigator.canShare?.({ files: [f] })) {
+        shareFile = f;
+        shareBtn.hidden = false;
+      }
+    })
+    .catch(() => {});
+  shareDialog.showModal();
+}
+
+function saveBlob(b: Blob, name: string) {
+  const url = URL.createObjectURL(b);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+shareBtn.addEventListener("click", () => {
+  if (!shareFile || !navigator.canShare?.({ files: [shareFile] })) return;
+  void navigator.share({ files: [shareFile], title: shareLabel }).catch(() => {});
+  window.umami?.track("share", { sound: shareLabel });
+});
+
+// fetch→blob→objectURL: reliable save on iOS Safari (a static <a download> may open a preview)
+dlLink.addEventListener("click", (e) => {
+  e.preventDefault();
+  const name = dlLink.download;
+  if (shareFile) saveBlob(shareFile, name);
+  else
+    fetch(dlLink.href)
+      .then((r) => r.blob())
+      .then((b) => saveBlob(b, name))
+      .catch(() => {});
+  window.umami?.track("download", { sound: shareLabel });
+});
+
+// downloads modal: searchable list. each row = [⬇ get] + [label = tap to preview-play].
+function renderDownloadList(q = "") {
+  const query = q.trim().toLowerCase();
+  const list = query ? sounds.filter((s) => s.label.toLowerCase().includes(query)) : sounds;
+  dlList.replaceChildren(
+    ...list.map((s) => {
+      const row = document.createElement("div");
+      row.className = "dl-row";
+      const getBtn = document.createElement("button");
+      getBtn.type = "button";
+      getBtn.className = "dl-row__get";
+      getBtn.dataset.file = s.file;
+      getBtn.innerHTML =
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>';
+      getBtn.title = "Descargar / compartir";
+      getBtn.setAttribute("aria-label", "Descargar " + s.label);
+      const playBtn = document.createElement("button");
+      playBtn.type = "button";
+      playBtn.className = "dl-row__play";
+      playBtn.dataset.file = s.file;
+      const fill = document.createElement("span");
+      fill.className = "pad__fill";
+      const lbl = document.createElement("span");
+      lbl.className = "dl-row__label";
+      lbl.textContent = s.label;
+      playBtn.append(fill, lbl);
+      row.append(playBtn, getBtn);
+      return row;
+    })
+  );
+}
+
+dlBtn.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  dlSearch.value = "";
+  renderDownloadList();
+  dlDialog.showModal();
+  dlSearch.focus(); // auto-focus → opens the on-screen keyboard on mobile
+  window.umami?.track("downloads-open");
+});
+dlSearch.addEventListener("input", () => renderDownloadList(dlSearch.value));
+dlList.addEventListener("click", (e) => {
+  const target = e.target as HTMLElement;
+  const getBtn = target.closest<HTMLElement>(".dl-row__get");
+  if (getBtn) {
+    const file = getBtn.dataset.file!;
+    window.umami?.track("download", { sound: byFile.get(file)?.label ?? file });
+    openShareSheet(file);
+    return;
+  }
+  const playBtn = target.closest<HTMLElement>(".dl-row__play");
+  if (playBtn) void play(playBtn.dataset.file!); // preview so you know which one it is
+});
 
 // ---------- edit mode ----------
 function setEditing(on: boolean) {
