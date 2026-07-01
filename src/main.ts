@@ -12,6 +12,12 @@ import {
 import * as state from "./state";
 import { enableSortable } from "./sortable";
 
+declare global {
+  interface Window {
+    umami?: { track: (event: string, data?: Record<string, unknown>) => void };
+  }
+}
+
 type Sound = { id: string; label: string; file: string; fav?: boolean };
 
 const app = document.querySelector<HTMLElement>("#app")!;
@@ -63,7 +69,7 @@ async function boot() {
     state.reorderFavorites(defaultFavs);
   }
 
-  setPlaybackListener({ onStart: fillStart, onEnd: fillClear });
+  setPlaybackListener({ onStart: onPlayStart, onEnd: fillClear });
   applySettings();
   render();
   const favFiles = new Set(state.getFavorites());
@@ -208,6 +214,13 @@ function fillClear(file: string) {
     fill.style.transition = "transform 0.14s ease-out";
     fill.style.transform = "scaleX(0)";
   });
+}
+
+// every play (click, keyboard, reverse) → fill + analytics count.
+// umami loads only on the deployed site, so window.umami is undefined on localhost → guarded.
+function onPlayStart(file: string, dur: number, reverse: boolean) {
+  fillStart(file, dur, reverse);
+  window.umami?.track("play", { sound: byFile.get(file)?.label ?? file });
 }
 
 // ---------- pad interaction ----------
