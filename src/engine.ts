@@ -39,6 +39,10 @@ export function setTriggerMode(m: TriggerMode): void {
 
 function getCtx(): AudioContext {
   if (!ctx) {
+    // iOS 16.4+: the "playback" session plays THROUGH the ringer/silent switch.
+    // ponytail: covers modern iOS; pre-16.4 needs a silent <audio> loop hack — add if it matters.
+    const nav = navigator as Navigator & { audioSession?: { type: string } };
+    if (nav.audioSession) nav.audioSession.type = "playback";
     ctx = new AudioContext();
     compressor = ctx.createDynamicsCompressor(); // tames peaks when sounds stack
     gain = ctx.createGain();
