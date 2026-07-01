@@ -2,6 +2,12 @@
   "name": "botonera",
   "private": true,
   "version": "0.1.0",
+  "description": "La Botonera de la Araña — soundboard con motor Web Audio: disparo instantáneo, reversa, favoritos, PWA offline.",
+  "license": "MIT",
+  "author": "Agustín Mouriño (@hagovRanger)",
+  "homepage": "https://labotonerahaa.vercel.app/",
+  "repository": { "type": "git", "url": "https://github.com/agusmoura/botonera-haa.git" },
+  "engines": { "node": ">=20", "pnpm": ">=9" },
   "packageManager": "pnpm@11.3.0",
   "type": "module",
   "scripts": {
