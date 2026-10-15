@@ -84,12 +84,6 @@ async function boot() {
   const favFiles = new Set(state.getFavorites());
   void warmup([...favFiles]); // decode favorites → instant 1-9
   prefetch(sounds.map((s) => s.file).filter((f) => !favFiles.has(f))); // warm the rest in idle
-
-  // show the info modal once per browser session (recalcar la firma + el contexto)
-  if (!sessionStorage.getItem("botonera:info-seen")) {
-    sessionStorage.setItem("botonera:info-seen", "1");
-    infoDialog.showModal();
-  }
 }
 
 // ---------- rendering ----------
